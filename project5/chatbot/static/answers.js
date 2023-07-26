@@ -1,0 +1,1 @@
+let answers = ["hey", "I am fine", "GoodMorning! How can i help you on today?", "I'm Plato!Your own virtual assitant", "It is a gateway service that provides dynamic routing, monitoring, resiliency, security, and more"];

@@ -1,0 +1,253 @@
+* {
+  margin: 0;
+}
+.main_page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 50px;
+  padding: 20px;
+}
+.heading {
+  margin: 20px;
+}
+.plato {
+  margin: 20px;
+}
+.para {
+  margin: 20px;
+}
+.head {
+  margin: 20px;
+}
+.subhead {
+  margin: 20px;
+}
+.list {
+  margin: 20px;
+}
+.end {
+  margin: 20px;
+}
+
+/* here is the chat bot */
+.main {
+  height: 95%;
+  width: 330px;
+  position: fixed;
+  display: none;
+  flex-direction: column;
+  right: 15px;
+  bottom: 20px;
+  box-shadow: 0px 0px 2px grey;
+  border-radius: 10px 10px 0px 10px;
+  overflow: hidden;
+  z-index: 10000;
+  background-color: white;
+}
+.top {
+  height: 15%;
+  color: white;
+  background-color: #ef4444;
+  background-color: #30418f;
+  border-radius: 10px 10px 0px 0px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.top .key {
+  font-size: 20px;
+  width: 90%;
+  align-self: center;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+}
+.top .assistant {
+  font-size: 13px;
+  width: 90%;
+  align-self: center;
+  margin-top: 3px;
+  letter-spacing: 0.7px;
+  color: rgb(241, 241, 241);
+}
+.top .cross {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  cursor: pointer;
+}
+
+.options {
+  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.267);
+}
+.options div {
+  padding: 5px 10px 5px 10px;
+  margin: 2px;
+  color: blue;
+  border: 1px solid rgba(0, 0, 255, 0.655);
+  font-size: 13px;
+  border-radius: 3px;
+  letter-spacing: 0.7px;
+  cursor: pointer;
+}
+
+.options div:hover {
+  border-color: black;
+  color: black;
+  box-shadow: 0 0 2px gray;
+}
+
+.chat {
+  height: 80%;
+  overflow: auto;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  position: relative;
+}
+.full {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding-left: 5px;
+}
+.full_type {
+  width: 100%;
+  display: flex;
+  margin: 5px;
+  /* display: none; */
+  position: absolute;
+  bottom: 0;
+  z-index: 100;
+}
+
+.full_type_small {
+  width: fit-content;
+  display: flex;
+  gap: 5px;
+  border-radius: 4px 4px 4px 0px;
+  margin: 5px;
+  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.455);
+  padding: 10px 10px 10px 10px;
+}
+.full_right {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+.chat .full .small {
+  width: 70%;
+  border-radius: 4px 4px 4px 0px;
+  margin: 5px;
+  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.455);
+  padding: 10px 10px 10px 10px;
+  font-size: 14px;
+  letter-spacing: 0.7px;
+  display: flex;
+}
+
+.small_right {
+  width: 70%;
+  border-radius: 4px 4px 0px 4px;
+  margin: 5px;
+  font-size: 14px;
+  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.455);
+  padding: 10px 10px 10px 10px;
+  letter-spacing: 0.7px;
+  display: flex;
+}
+.bottom {
+  height: 10%;
+  display: flex;
+  box-shadow: 0 0 3px gray;
+}
+.chat_circle {
+  height: 70px;
+  width: 70px;
+
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  border-radius: 50%;
+  /* box-shadow: 0 0 2px gray; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  background-color: #30418f;
+}
+
+.chat_svg {
+  height: 30px;
+  width: 30px;
+}
+
+.input {
+  height: 100%;
+  width: 84%;
+}
+.input input {
+  height: 100%;
+  width: 100%;
+  border: 0;
+  padding-left: 10px;
+  outline: 0;
+}
+
+.send {
+  height: 100%;
+  width: 15%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.chat::-webkit-scrollbar {
+  display: none;
+}
+
+.msg_audio {
+  display: none;
+}
+
+.dots {
+  height: 5px;
+  width: 5px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.572);
+  animation: type 0.5s linear infinite alternate;
+}
+
+.dot_1 {
+  animation: type_1 0.5s linear infinite alternate;
+}
+.dot_1 {
+  animation: type_2 0.5s linear infinite alternate;
+}
+.dot_1 {
+  animation: type_3 0.5s linear infinite alternate;
+}
+
+.tp_text {
+  font-size: 12px;
+  letter-spacing: 0.7px;
+}
+
+.bot_img {
+  height: 30px;
+  width: 30px;
+  border-radius: 50%;
+  object-fit: contain;
+}
+.bot_img_1 {
+  height: 20px;
+  width: 20px;
+  /* border-radius: 50%; */
+  object-fit: contain;
+}
