@@ -34,33 +34,6 @@ pipeline {
             }
         }
 
-        stage("config repo") {
-            steps {
-                script {
-                    dir('config') {
-                        sh "echo hello"
-                    }
-                }
-                post {
-                    success {
-                        script {
-                            sh "echo success"
-                        }
-                    }
-                    failure {
-                        script {
-                            sh "echo failed"
-                        }
-                    }
-                    unstable {
-                        script {
-                            sh "echo unstable"
-                        }
-                    }
-                }
-            }
-        }
-
         stage('Compare Files') {
             steps {
                 script {
@@ -100,6 +73,33 @@ pipeline {
                         }
                     }
                 }
+            }
+        }
+
+        stage("config repo") {
+            steps {
+                script {
+                    dir('config')
+                    sh "echo hello"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                sh "echo success"
+            }
+        }
+        failure {
+            script {
+                sh "echo failed"
+            }
+        }
+        unstable {
+            script {
+                sh "echo unstable"
             }
         }
     }
