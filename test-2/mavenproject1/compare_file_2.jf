@@ -4,34 +4,31 @@ pipeline {
         string(name: 'Git_Repo', defaultValue: '')
     }
     stages {
-        stage('Clone and List Files') {
+        stage('checkout script') {
             steps {
                 script {
-                    // Define repository URLs and branches
-                    def np_repo = 'https://github.com/nik786/git-test-2.git'
-                    def np_branch = 'release/1.0'
-                    def prod_repo = 'https://github.com/nik786/hello-tomcat-project-2.git'
-                    def prod_branch = 'release/1.0'
-                    def np_app_file = 'app-np.properties'
-                    def prod_app_file = 'app-prod.properties'
+                    dir('script') {
+                        // Define repository URLs and branches
+                        def np_repo = 'https://github.com/nik786/git-test-2.git'
+                        def np_branch = 'release/1.0'
+                        def prod_repo = 'https://github.com/nik786/hello-tomcat-project-2.git'
+                        def prod_branch = 'release/1.0'
+                        def np_app_file = 'app-np.properties'
+                        def prod_app_file = 'app-prod.properties'
 
-                    // Clean the workspace
-                    cleanWs()
-                    checkout([$class: 'GitSCM', branches: [[name: '*/release/1.0']], userRemoteConfigs: [[url: np_repo]]])
+                        // Clean the workspace
+                        cleanWs()
 
-                    // Create directories for the repositories
-                    dir("$WORKSPACE/np") {
-                        sh 'git init'
-                        sh "git remote add origin $np_repo"
-                        sh 'git fetch --all'
-                        sh "git checkout $np_branch"
-                    }
+                        // Create directories for the repositories
+                        sh "mkdir -p $WORKSPACE/np"
+                        sh "mkdir -p $WORKSPACE/pd"
+                        checkout([$class: 'GitSCM', branches: [[name: '*/release/1.0']], userRemoteConfigs: [[url: np_repo]]])
 
-                    dir("$WORKSPACE/pd") {
-                        sh 'git init'
-                        sh "git remote add origin $prod_repo"
-                        sh 'git fetch --all'
-                        sh "git checkout $prod_branch"
+                        // Clone the first repository and switch to the specified branch
+                        sh "cd $WORKSPACE/np && git clone $np_repo . && git checkout $np_branch"
+
+                        // Clone the second repository and switch to the specified branch
+                        sh "cd $WORKSPACE/pd && git clone $prod_repo . && git checkout $prod_branch"
                     }
                 }
             }
@@ -40,8 +37,9 @@ pipeline {
         stage("config repo") {
             steps {
                 script {
-                    dir('config')
-                    sh "echo hello"
+                    dir('config') {
+                        sh "echo hello"
+                    }
                 }
                 post {
                     success {
