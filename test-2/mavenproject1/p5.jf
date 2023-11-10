@@ -1,0 +1,46 @@
+node('ec2') {
+    def git_url = "git@github.com:nik786/hello-tomcat-project-2.git"
+    def git_branch = "master"
+    def sshKey = credentials('github_key')  // Replace with your SSH key credentials ID
+    
+    cleanWs()
+
+    stage('Checkout') {
+        script {
+             checkout([$class: 'GitSCM', branches: [[name: "${git_branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'github_key', url:  "git@github.com:nik786/hello-tomcat-project-2.git"]]])
+        }
+    }
+
+    stage('TIAA') {
+        dir("/var/lib/jenkins/workspace/ti") {
+            sh 'python ti.py -api debitcardsetup-iapi -id sysTIAGGDHGSDK -v1 x -v2 x'
+        }
+    }
+    
+    stage('Commit') {
+        dir("/var/lib/jenkins/workspace/ti") {
+            sh '''
+              git config --global user.email "chakraborty.rock@gmail.com"
+              git config --global user.name "nik786"
+              git checkout master
+              git add test.yml
+              git commit -m "$jira"
+              git push git@github.com:nik786/hello-tomcat-project-2.git HEAD:master
+            '''
+        }
+    }
+
+    
+
+    stage('Announce') {
+        
+            script {
+                if (currentBuild.resultIsBetterOrEqualTo('SUCCESS')) {
+                    echo "Build successful!"
+                } else {
+                    error "Build failed!"
+                }
+            }
+        
+    }
+}
