@@ -1,4 +1,3 @@
-#python a7.py -api debitcardsetup-iapi -id sysTIAGGDHGSDK -v1 1.3-1.11 -v2 3-1.13
 import argparse
 import yaml
 
@@ -36,7 +35,14 @@ def add_data_to_yaml(input_file, api, id, v1, v2):
     if "defaultVersion" in data["eurekazuul"]["serviceClientVersionMap"][api]:
         # Rearrange the data to match the desired format
         default_version = data["eurekazuul"]["serviceClientVersionMap"][api].pop("defaultVersion")
-        data["eurekazuul"]["serviceClientVersionMap"][api]["clientVersionRules"]["default"] = default_version
+        data["eurekazuul"]["serviceClientVersionMap"][api]["clientVersionRules"]["default"] = {
+            "defaultMajorMinorVersion": default_version,
+            "versionRules": {
+                "1": {
+                    "defaultMinorVersion": default_version
+                }
+            }
+        }
 
     # Write the updated data back to the YAML file without using sort_keys
     with open(input_file, "w") as yaml_file:
