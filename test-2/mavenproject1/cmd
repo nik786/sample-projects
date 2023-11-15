@@ -1,6 +1,13 @@
 def jobName = 'YourJobName'
 def job = Jenkins.instance.getItem(jobName)
 
-def successfulBuilds = job.builds.findAll { it.result == hudson.model.Result.SUCCESS }
+def allBuilds = job.builds
+def successfulBuilds = allBuilds.findAll { it.result == hudson.model.Result.SUCCESS }
+def failedBuilds = allBuilds.findAll { it.result == hudson.model.Result.FAILURE }
 
 println("Number of successful builds for job $jobName: ${successfulBuilds.size()}")
+println("Number of failed builds for job $jobName: ${failedBuilds.size()}")
+
+def allBuilds = job.builds
+
+println("Total number of builds for job $jobName: ${allBuilds.size()}")
