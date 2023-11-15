@@ -1,62 +1,50 @@
-import argparse
-import yaml
+import yaml, os, argparse
+from pprint import pprint 
 
-def add_data_to_yaml(input_file, api, id, v1, v2):
-    # New data to add under clientVersionRules
-    new_data = {
-        id: {
-            "defaultMajorMinorVersion": v1,
-            "versionRules": {
-                "1": {
-                    "defaultMinorVersion": v2
-                }
-            }
-        }
-    }
+def PreParse():
+    testFile = open('test.yml', 'r')
+    lines = testFile.readlines()
+    escapedLines = []
+    for line in lines:
+         escapedLines.append(line.replace("'","'\''"))
+    with open("testEscaped.yml","w+") as out:
+        for escapedLine in escapedLines:
+             out.write(escapedLine)
 
-    # Load the YAML file
-    with open(input_file, "r") as yaml_file:
-        data = yaml.safe_load(yaml_file)
+def PostParse():
+    outFile = open("output.yml","r")
+    lines = outFile.readlines()
+    outFile.close()
+    fixedLines = []
+    for line in lines:
+        fixedLines.append(line.replace("\'\'\'","'"))
+    outFile = open("output.yml","w+")
+    for fixedLine  in fixedLines:
+        outFile.write(fixedLine)
+    outFile.close()
 
-    # Locate the position to add the new data
-    if "eurekazuul" not in data:
-        data["eurekazuul"] = {}
-    if "serviceClientVersionMap" not in data["eurekazuul"]:
-        data["eurekazuul"]["serviceClientVersionMap"] = {}
-    if api not in data["eurekazuul"]["serviceClientVersionMap"]:
-        data["eurekazuul"]["serviceClientVersionMap"][api] = {}
-    if "allowableConsumers" not in data["eurekazuul"]["serviceClientVersionMap"][api]:
-        data["eurekazuul"]["serviceClientVersionMap"][api]["allowableConsumers"] = []
-    if "clientVersionRules" not in data["eurekazuul"]["serviceClientVersionMap"][api]:
-        data["eurekazuul"]["serviceClientVersionMap"][api]["clientVersionRules"] = {}
-    data["eurekazuul"]["serviceClientVersionMap"][api]["clientVersionRules"].update(new_data)
 
-    # Check if the defaultVersion key exists
-    if "defaultVersion" in data["eurekazuul"]["serviceClientVersionMap"][api]:
-        # Rearrange the data to match the desired format
-        default_version = data["eurekazuul"]["serviceClientVersionMap"][api].pop("defaultVersion")
-        data["eurekazuul"]["serviceClientVersionMap"][api]["clientVersionRules"]["default"] = {
-            "defaultMajorMinorVersion": default_version,
-            "versionRules": {
-                "1": {
-                    "defaultMinorVersion": default_version
-                }
-            }
-        }
+parser = argparse.ArgumentParser()
+parser.add_argument("-api")
+parser.add_argument("-id")
+parser.add_argument("-v1")
+parser.add_argument("-v2")
+args = parser.parse_args()
+PreParse()
 
-    # Write the updated data back to the YAML file without using sort_keys
-    with open(input_file, "w") as yaml_file:
-        yaml.dump(data, yaml_file, default_flow_style=False)
+os.remove("test.yml")
+testFile = open('testEscaped.yml', 'r')
+parsed = yaml.safe_load(testFile)
+testFile.close()
 
-    print(f"New data added under clientVersionRules in {input_file}")
+keyToInsert = args.id
+valueToInsert = {'defaultMajorMinorVersion': "\'%s\'"%args.v1, 'versionRules':{1:{'defaultMinorVersion':"\'%s\'"%args.v2}}}
+parsed['eurekazuul']['serviceClientVersionMap'][args.api]['clientVersionRules'][keyToInsert] = valueToInsert
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Add data to a YAML file")
-    parser.add_argument("-api", help="API name", required=True)
-    parser.add_argument("-id", help="ID", required=True)
-    parser.add_argument("-v1", help="Version 1", required=True)
-    parser.add_argument("-v2", help="Version 2", required=True)
-
-    args = parser.parse_args()
-    file = "test.yml"
-    add_data_to_yaml(file, args.api, args.id, args.v1, args.v2)
+outFile = open("output.yml","w+")
+yaml.dump(parsed, outFile)
+outFile.close()
+PostParse()
+print("Data has been added")
+os.remove("testEscaped.yml")
+os.rename("output.yml","test.yml")
