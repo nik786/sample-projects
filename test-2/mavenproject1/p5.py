@@ -31,12 +31,16 @@ parser.add_argument("-id")
 parser.add_argument("-v1")
 parser.add_argument("-v2")
 args = parser.parse_args()
+
+
 PreParse()
 
-os.remove("test3.yml")
 testFile = open('testEscaped.yml', 'r')
 parsed = runYaml.load(testFile)
 testFile.close()
+if parsed['eurekazuul']['serviceClientVersionMap'][args.api]['clientVersionRules'].get(args.id):
+    print("data is already present")
+    quit()
 
 keyToInsert = args.id
 valueToInsert = {'defaultMajorMinorVersion': '\'%s\''%args.v1, 'versionRules':{1:{'defaultMinorVersion':'\'%s\''%args.v2}}}
