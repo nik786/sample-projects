@@ -24,3 +24,54 @@ echo "Total number of builds for job ${JOB_NAME}: ${BUILD_COUNT}"
 echo "Number of successful builds for job ${JOB_NAME}: ${SUCCESSFUL_BUILDS}"
 echo "Number of failed builds for job ${JOB_NAME}: ${FAILED_BUILDS}"
 
+
+
+
+
+kubectl set image deployment/myapp-deployment myapp-container=myapp:v2.0
+jq '.items[].spec.template.spec.containers[].env[0].value' r3.json | grep -i .git | tr -d '"'
+jq '.items[].spec.template.spec.containers[].env[1].value | select( . != null )' r3.json | sed -n '1p' | tr -d '"'
+jq '.metadata.labels.environment' p.json | tr -d '"'
+
+kubectl get nodes -o=jsonpath='{.items[*].metadata.name}'
+
+kubectl get nodes -o jsonpath='{.items[*].status.nodeInfo.osImage}'
+
+kubectl config view --kubeconfig=my-kube-config -o jsonpath="{.users[*].name}"
+
+kubectl get pv --sort-by=.spec.capacity.storage 
+kubectl -n kube-system get po nginx -o jsonpath="{.spec.containers[*].image}"
+
+kubectl get nodes -o jsonpath='{.items[*].status.addresses[?(@.type=="InternalIP")].address}' > /root/CKA/node_ips
+
+ kubectl get pods -o jsonpath={..metadata.name}
+
+kubectl get secrets -o jsonpath='{range .items[*]}{.metadata.name}{.metadata.creationTimestamp}}{end}' | tr "}" "\n" | awk -F'2022' '{print $1" 2022"}' | cut -d " " -f1
+
+kubectl get secrets -o jsonpath='{range .items[*]}{.metadata.name}{.metadata.creationTimestamp}}{end}' | tr "}" "\n" | awk -F'2022' '{print $1" 2022"}' | cut -d " " -f1 | grep '^db-user-pass' | xargs -I {} kubectl delete secret {}
+
+kubectl get secrets -o jsonpath='{range .items[*]}{.metadata.name}{.metadata.creationTimestamp}}{end}' | tr "}" "\n" | sed 's/2022-.*/ 2022/g'
+
+kubectl get pods multi-pod -o jsonpath='{range .spec.containers[*]}{"\n"}{.name}'
+
+kubectl get pods multi-pod -o jsonpath='{range .spec.containers[*]}{.name}'
+
+kubectl get pods -o=jsonpath="{.items[*].spec.containers[*].name}"
+
+kubectl get pods --field-selector=status.phase=Running -o=jsonpath="{range .items[*]}{.metadata.name}{'\n'}"
+
+yq '.spec.template.spec.containers[0].env[1].value' nginx.yml
+
+jq '.items[].spec.template.spec.containers[].env[0].value' r3.json | grep -i .git | tr -d '"'
+
+kubectl run web2 --labels="app=web2" --image=tomcat:8.0
+
+kubectl get po --labels="app=web2" 
+
+kubectl get pods --selector env=dev --no-headers | wc -l
+
+kubectl expose deployment hr-web-app --type=NodePort --port=8080 --targetPort=30080 --name=hr-web-app-service  
+
+kubectl expose deployment media-front --name=media-front --port=8080 --target-port=8080 --type=NodePort --selector=name=media-front --overrides '{ "apiVersion": "v1","spec":{"ports":[{"port": 80,"protocol":"TCP","targetPort": 80,"nodePort": 30380}]}}'
+
+
