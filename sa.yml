@@ -1,0 +1,325 @@
+API and kubeconfig usage
+
+# Generate private key
+openssl genrsa -out k8s-admin.key 2048
+
+# Generate certificate signing request (CSR)
+openssl req -new -key k8s-admin.key -out k8s-admin.csr -subj "/CN=k8s-admin/O=client"
+
+# Self-sign the certificate (or send the CSR to a certificate authority for signing)
+openssl x509 -req -in k8s-admin.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out k8s-admin.crt -days 365
+
+
+openssl x509 -in k8s-admin.crt --text -noout
+
+kubectl get pods --as k8s-admin
+
+
+
+
+kubectl create role developer-role --verb=get --verb=list,create,delete --verb=watch --resource=pods --namespace=kube-system
+
+
+kubectl create rolebinding k8s-admin-developer-role-binding --clusterrole=admin --user=k8s-admin     --namespace=kube-system
+
+
+kubectl create clusterrole pod-admin --verb=get,watch,list,create --resource=pods
+
+kubectl create clusterrolebinding pod-admin-binding --clusterrole=pod-admin --user=k8s-admin
+
+  
+curl -ks --cert /etc/kubernetes/pki/user/k8s-admin.crt --key /etc/kubernetes/pki/user/k8s-admin.key --cacert /etc/kubernetes/pki/user/k8s-admin.crt https://localhost:6443/api/v1/namespaces/kube-system/pods
+
+curl -ks --cert /etc/kubernetes/pki/user/k8s-admin.crt --key /etc/kubernetes/pki/user/k8s-admin.key --cacert /etc/kubernetes/pki/user/k8s-admin.crt https://192.168.56.70:6443/api/v1/namespaces/kube-system/pods
+
+
+curl -ks --cert /etc/kubernetes/pki/user/k8s-admin.crt --key /etc/kubernetes/pki/user/k8s-admin.key --cacert /etc/kubernetes/pki/user/k8s-admin.crt https://192.168.56.70:6443/api/v1/namespaces/kube-system/pods
+
+
+kubectl cluster-info --kubeconfig=/root/CKA/super.kubeconfig
+
+kubectl config view --kubeconfig=my-kube-config -o jsonpath="{.contexts[?(@.context.user=='aws-user')].name}" 
+
+
+kubectl config view --kubeconfig=my-kube-config -o jsonpath="{.users[*].name}"
+
+
+
+NAME: kube-apiserver-cm48
+STATUS: Running
+
+
+
+WITH TOKEN
+
+
+bash auth.sh
+kubectl create sa pod-admin 
+
+kubectl create clusterrole pod-admin-role --resource=pod --verb=get,watch,list,create,delete
+
+kubectl create clusterrolebinding pod-admin-role-binding --clusterrole=pod-admin-role --serviceaccount=default:pod-admin
+
+kubectl create clusterrolebinding dev-user-sa-binding --clusterrole=cluster-admin --serviceaccount=default:dev-user-sa
+
+
+
+
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  annotations:
+    kubernetes.io/service-account.name: dev-user-sa
+type: kubernetes.io/service-account-token 
+
+
+kubectl config view --minify -o jsonpath='{..namespace}'; echo
+kubectl config set-context --current --namespace=default
+
+kubectl create sa dev-user-sa
+kubectl create token dev-user-sa
+
+
+
+
+
+
+
+
+
+
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: default-token
+  annotations:
+    kubernetes.io/service-account.name: default
+type: kubernetes.io/service-account-token
+EOF
+
+
+while ! kubectl describe secret default-token | grep -E '^token' >/dev/null; do
+  echo "waiting for token..." >&2
+  sleep 1
+done
+
+
+
+
+APISERVER=$(kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " ")
+TOKEN=$(kubectl describe secret default-token | grep -E '^token' | cut -f2 -d':' | tr -d " ")
+
+curl $APISERVER/api --header "Authorization: Bearer $TOKEN" --insecure
+
+curl -sk https://192.168.56.70:6443/api/v1/namespaces/default/pods/nginx-deployment-6b8ff9687d-b4fz7 --header "Authorization: Bearer $TOKEN" --insecure
+
+
+kubectl auth can-i get pods --as=system:serviceaccount:default:api-service-account
+
+
+echo -n "hello world" | base64
+
+echo -n "aGVsbG8gd29ybGQ=" | base64 --decode
+hello world
+
+
+openssl rand -base64 12
+openssl rand -base64 46
+n5DiuTYIunJg7LWL07fWPi3BwZ0T8mvGhbtDhTdH41YtF8gr5KE7nfe8nscpcg==
+openssl rand -base64 64
+openssl rand -base64 128
+
+openssl rand -base64 32
+QwE6srwpXaBidbteu3zAtbyEADw18JThhfaZIUUcf1I=
+
+kubectl create secret generic api-token --from-literal=token=n5DiuTYIunJg7LWL07fWPi3BwZ0T8mvGhbtDhTdH41YtF8gr5KE7nfe8nscpcg==
+
+
+kubectl patch serviceaccount api-service-account -p '{"secrets": [{"name": "api-token"}]}'
+
+kubectl patch serviceaccount dev-user -p '{"secrets": [{"name": "api-token"}]}'
+
+kubectl patch serviceaccount test-user -p '{"secrets": [{"name": "api-token"}]}'
+
+kubectl get serviceaccount api-service-account -o yaml
+
+kubectl get serviceaccount api-service-account  -o=jsonpath='{.secrets[0].name}'
+
+kubectl get serviceaccount test-user  -o=jsonpath='{.secrets[0].name}'
+
+kubectl get secrets  api-token  -o=jsonpath='{.data.token}'
+
+
+kubectl get secrets  api-token  -o=jsonpath='{.data.token}' | base64 -d
+
+
+curl -sk  https://192.168.56.70:6443/api/v1/namespaces 
+
+
+
+curl -sk -H "Authorization: Bearer  QwE6srwpXaBidbteu3zAtbyEADw18JThhfaZIUUcf1I=" https://192.168.56.70:6443/api/v1/namespaces/default/pods/nginx-deployment-6b8ff9687d-b4fz7
+
+curl -sk -H "Authorization: Bearer  QwE6srwpXaBidbteu3zAtbyEADw18JThhfaZIUUcf1I=" https://127.0.0.1:6443/api/v1/namespaces/default/pods/nginx-deployment-6b8ff9687d-b4fz7
+
+
+curl -sk  https://192.168.56.70:6443/api/v1/namespaces/default/pods -H "Authorization: Bearer ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklsSmtVM2hGV0haMlpFbERRWFJ3ZUVwNmRFOHRaRGhIZVdaVGVGSTBSR2RPZDNGRVFqazBWbXBXVGtFaWZRLmV5SnBjM01pT2lKcmRXSmxjbTVsZEdWekwzTmxjblpwWTJWaFkyTnZkVzUwSWl3aWEzVmlaWEp1WlhSbGN5NXBieTl6WlhKMmFXTmxZV05qYjNWdWRDOXVZVzFsYzNCaFkyVWlPaUprWldaaGRXeDBJaXdpYTNWaVpYSnVaWFJsY3k1cGJ5OXpaWEoyYVdObFlXTmpiM1Z1ZEM5elpXTnlaWFF1Ym1GdFpTSTZJbVJsWm1GMWJIUXRkRzlyWlc0aUxDSnJkV0psY201bGRHVnpMbWx2TDNObGNuWnBZMlZoWTJOdmRXNTBMM05sY25acFkyVXRZV05qYjNWdWRDNXVZVzFsSWpvaVpHVm1ZWFZzZENJc0ltdDFZbVZ5Ym1WMFpYTXVhVzh2YzJWeWRtbGpaV0ZqWTI5MWJuUXZjMlZ5ZG1salpTMWhZMk52ZFc1MExuVnBaQ0k2SW1GbFpEVmtZbVU0TFdGbFkyRXROREE1T0MxaVlqUTNMVE5rTldKbE9UbGtPVGcyTnlJc0luTjFZaUk2SW5ONWMzUmxiVHB6WlhKMmFXTmxZV05qYjNWdWREcGtaV1poZFd4ME9tUmxabUYxYkhRaWZRLlhvcWRrbk90Qk1Gb1lfd096cnFzVE9pLUpDRUo2WWxmTS1nTjZyemxMaHpTNXp2LWxhM19FRlRqSTlVc3B0aXVISVJxSXprWlZFcmV0bFBCUWFSWUpnLTcwT3FPZmFuTS1ZVGhUUlpyZGtWckFXQXdkU0I4WE9Uc01vbDVXV2NzVlRNVmpMUmdBbEk5d1BuNW41d1hrOGMwVDFPemZsNnJDc3p0Zzl2R2Y4N3dEUk5wdUJ5NGVkZnd3TVNvU28xTFRIblloT2JhRmhHNHdNVm1Va2RfNmQ1ZXV3WlZPQkFnaTcxX3I3NVI2MUM0cnZNbzJyVFhiWXd0Rk5oM2FqNzE3eVlHM0RfOXliQ1ZEMVdkNlhmdXNwYmJyNkdndGN0YXFmYWVNbmVKbDhKMDFvM0gxZ2M0Ti0yMUVsYVZXN1BMTHMtWVZQM1ZETzRFWmk4WU5waVFZdw=="
+
+
+
+
+kubeconfig
+
+kubectl config view
+
+
+kubectl config --kubeconfig=config use-context research
+kubectl config --kubeconfig=/root/my-kube-config current-context
+
+
+
+certs
+
+cat akshay.csr | base64 -w 0
+
+cat akshay.csr 
+-----BEGIN CERTIFICATE REQUEST-----
+MIICVjCCAT4CAQAwETEPMA0GA1UEAwwGYWtzaGF5MIIBIjANBgkqhkiG9w0BAQEF
+AAOCAQ8AMIIBCgKCAQEAoQh/f7OIxv+FR88sV5Ufm0/K0ZK1rgieTV8C4psY4nh3
+lX5/jhBuxgGJrNrH0Iya5Ri5b6SKoeH5aM3WMIGoplWDgLxxMOa3YjdocS2dkDAo
+lflI5OjEQRc0b5RK0MAQhpGR3OVIfrS6HJ3bWStRP0d/08bC7XmLL7mzkwp4Pc4T
+iez6POVGsAKHNhk8LXT5pSUKz8Lklb0Va+f9lELWB1R9I+Bf5xwbo/7xxQRMnZcN
+DAtrUdKhS55TJ/x1sN/qJbyMK2wLxQksEUuPzjjr3qpXtXSxKj2qgM/fPYU+AM1/
+UDl5KTQiyBmNPs1VmRh+xk3kqmOrd2yhHH3LH80kiwIDAQABoAAwDQYJKoZIhvcN
+AQELBQADggEBABz5hSqtRlgfR4JAX7hfvwX1Np/E5tVH3x1JQS9Rfuo7302gK+iA
+J/vG41uMseiwdAkFqhdvsyP5bG0nrTEqwdfOl9JZZf7B9xT/e6VYW87AuiTITRz0
+ilF1/JOWLGFl+jgkEJ69cYeHEjf9FzJqOuz3AVlGaFSvA/rU/k+9Ejr8ipyFwt9k
+sPCkEH8YyGfTJdi9vdSkJX795lffXiJy8Yjbw/PyzJ7ogSjksKqEbxZaXsBU/ZZH
+VnGx4Y+h8G0RHukyyj7dTOBU6mKoDwDg4hfguKZ4o8RcqU2FMYBhYt6S2n5JaIHf
+kFVaZFvSDv63eX7WqN0iFHUeUFQtWsza8OQ=
+-----END CERTIFICATE REQUEST-----
+
+
+cat akshay-csr.yaml
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: akshay
+spec:
+  groups:
+  - system:authenticated
+  request: |
+LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ1ZqQ0NBVDRDQVFBd0VURVBNQTBHQTFVRUF3d0dZV3R6YUdGNU1JSUJJakFOQmdrcWhraUc5dzBCQVFFRgpBQU9DQVE4QU1JSUJDZ0tDQVFFQW9RaC9mN09JeHYrRlI4OHNWNVVmbTAvSzBaSzFyZ2llVFY4QzRwc1k0bmgzCmxYNS9qaEJ1eGdHSnJOckgwSXlhNVJpNWI2U0tvZUg1YU0zV01JR29wbFdEZ0x4eE1PYTNZamRvY1MyZGtEQW8KbGZsSTVPakVRUmMwYjVSSzBNQVFocEdSM09WSWZyUzZISjNiV1N0UlAwZC8wOGJDN1htTEw3bXprd3A0UGM0VAppZXo2UE9WR3NBS0hOaGs4TFhUNXBTVUt6OExrbGIwVmErZjlsRUxXQjFSOUkrQmY1eHdiby83eHhRUk1uWmNOCkRBdHJVZEtoUzU1VEoveDFzTi9xSmJ5TUsyd0x4UWtzRVV1UHpqanIzcXBYdFhTeEtqMnFnTS9mUFlVK0FNMS8KVURsNUtUUWl5Qm1OUHMxVm1SaCt4azNrcW1PcmQyeWhISDNMSDgwa2l3SURBUUFCb0FBd0RRWUpLb1pJaHZjTgpBUUVMQlFBRGdnRUJBQno1aFNxdFJsZ2ZSNEpBWDdoZnZ3WDFOcC9FNXRWSDN4MUpRUzlSZnVvNzMwMmdLK2lBCkovdkc0MXVNc2Vpd2RBa0ZxaGR2c3lQNWJHMG5yVEVxd2RmT2w5SlpaZjdCOXhUL2U2VllXODdBdWlUSVRSejAKaWxGMS9KT1dMR0ZsK2pna0VKNjljWWVIRWpmOUZ6SnFPdXozQVZsR2FGU3ZBL3JVL2srOUVqcjhpcHlGd3Q5awpzUENrRUg4WXlHZlRKZGk5dmRTa0pYNzk1bGZmWGlKeThZamJ3L1B5eko3b2dTamtzS3FFYnhaYVhzQlUvWlpIClZuR3g0WStoOEcwUkh1a3l5ajdkVE9CVTZtS29Ed0RnNGhmZ3VLWjRvOFJjcVUyRk1ZQmhZdDZTMm41SmFJSGYKa0ZWYVpGdlNEdjYzZVg3V3FOMGlGSFVlVUZRdFdzemE4T1E9Ci0tLS0tRU5EIENFUlRJRklDQVRFIFJFUVVFU1QtLS0tLQo=
+  signerName: kubernetes.io/kube-apiserver-client
+  usages:
+  - client auth
+
+kubectl get csr
+kubectl certificate approve akshay
+kubectl certificate deny agent-smith
+kubectl delete csr agent-smith
+
+
+cert creation
+
+ca
+
+openssl genrsa -out ca.key 2048
+
+openssl req -new -key ca.key -subj "/CN=KUBERNETES-CA" -out ca.csr
+
+openssl -x509 -req -in ca.csr -signkey ca.key -out ca.csr
+
+admin user
+
+openssl genrsa -out admin.key 2048
+
+openssl req -new -key admin.key -subj "/CN=kube-admin/O=system:masters" -out admin.csr 
+
+openssl x509 -req -in admin.csr -CA ca.crt -CAkey ca.key -out admin.crt
+
+
+
+dev user
+
+openssl genrsa -out dev.key 2048
+
+openssl req -new -key dev.key -subj "/CN=dev/O=system:masters" -out dev.csr 
+
+openssl x509 -req -in dev.csr -CA ca.crt -CAkey ca.key -out dev.crt
+
+
+prod user
+
+
+openssl genrsa -out prod.key 2048
+
+openssl req -new -key prod.key -subj "/CN=prod" -out prod.csr 
+
+openssl x509 -req -in prod.csr -CA ca.crt -CAkey ca.key -out prod.crt
+
+
+openssl x509 -in example-com.cert.pem -text -noout
+
+
+test user
+
+openssl genrsa -out test.key 2048
+
+openssl req -new -key test.key -subj "/CN=test" -out test.csr 
+
+openssl x509 -req -in test.csr -CA ca.crt -CAkey ca.key -out test.crt
+
+
+
+
+kubectl config --kubeconfig=config use-context test-user@test
+
+kubectl --kubeconfig=cm48_config get po 
+
+
+kubectl create serviceaccount api-01
+
+kubectl create token api-01
+
+kubectl create token dev-user-token
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  annotations:
+    kubernetes.io/service-account.name: dev-user-sa
+type: kubernetes.io/service-account-token 
+
+
+kubectl config view --minify -o jsonpath='{..namespace}'; echo
+kubectl config set-context --current --namespace=default
+
+kubectl create sa dev-user-sa
+kubectl create token dev-user-sa
+
+
+
+#!/bin/bash
+
+#URL="https://192.168.56.70:6443/api/v1/namespaces/default/pods"
+URL="https://192.168.56.70:6443/api/v1/pods"
+#TOKEN=$(kubectl get secrets api-token -o=jsonpath='{.data.token}' | base64 -d)
+TOKEN="eyJhbGciOiJSUzI1NiIsImtpZCI6IlJkU3hFWHZ2ZElDQXRweEp6dE8tZDhHeWZTeFI0RGdOd3FEQjk0VmpWTkEifQ.eyJhdWQiOlsiaHR0cHM6Ly9rdWJlcm5ldGVzLmRlZmF1bHQuc3ZjLmNsdXN0ZXIubG9jYWwiXSwiZXhwIjoxNzA4MzE2ODI2LCJpYXQiOjE3MDgzMTMyMjYsImlzcyI6Imh0dHBzOi8va3ViZXJuZXRlcy5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsIiwia3ViZXJuZXRlcy5pbyI6eyJuYW1lc3BhY2UiOiJkZWZhdWx0Iiwic2VydmljZWFjY291bnQiOnsibmFtZSI6ImRldi11c2VyLXNhIiwidWlkIjoiZjMzMWY0NjgtODFiNC00Y2ExLWJmZTItMjUwZGZjMDIzYTc5In19LCJuYmYiOjE3MDgzMTMyMjYsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRldi11c2VyLXNhIn0.nIfGf5PWzzxRa0JdwU3grAmUX_MCWVO2xFMXQJo5jqzgT95GoG_A-kyfX00m2BOy3dgbpIbcP-zRnPh2UtTSXQn7evzr486fEwGk12eajpxDQ64MeViHnlm91cBFZUNx3jjn0DXAjFd07lFPEIBjm8SAyp-X170AO-E66G0AHdTVaKnoenNQpUrewl6eoyeNBS-uj4N8gp1BMHoqco1CevE5dh-osHymKaxMk2SwK82trA1kT2kCBPPKbbTue4s0zXJ73EoolfvqFQV6Ww1LuMAU9CUuV2YB8jl6TT12HelJV6ChBpGh84jnPmWzl98-h5EXYhemberWuuaReVhtxQ"
+
+echo $TOKEN
+#TOKEN=$(kubectl get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='default')].data.token}")
+get_token() 
+{
+   curl_output=$(curl -sk -H "Authorization: Bearer $TOKEN" $URL)
+   echo "$curl_output"
+
+
+
+
+}
+
+get_token
