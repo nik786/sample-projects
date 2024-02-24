@@ -2,7 +2,7 @@
 FROM centos/httpd
 
 # Set maintainer label
-LABEL maintainer="sudipta"
+
 
 # Install additional packages (git, vim, curl, net-tools)
 RUN yum install -y git vim curl net-tools && \
