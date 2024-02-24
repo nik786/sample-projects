@@ -1,0 +1,2 @@
+docker run -d --name chat_01 -p 80:80 chat_bot_v01:01
+docker build -t chat_bot_v01:01 .
