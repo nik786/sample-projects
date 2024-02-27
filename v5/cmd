@@ -1,0 +1,2 @@
+docker build -t flask:0.6 git@github.com:infra-ops/kub-poc.git#master:cloud_k8s_platform/on_prem/app_build_deployment/app_build/python
+docker build -t flask:0.5 git@github.com:nik786/pythona-app-test.git#master:app/
