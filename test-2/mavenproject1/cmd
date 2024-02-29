@@ -13,16 +13,21 @@ def allBuilds = job.builds
 println("Total number of builds for job $jobName: ${allBuilds.size()}")
 
 
-JOB_NAME='jen_rest'
-JENKINS_URL='http://127.0.0.1:8080'
+#!/bin/bash
 
-SUCCESSFUL_BUILDS=$(curl -ks --user "nik:xxx" "${JENKINS_URL}/job/${JOB_NAME}/api/json?tree=builds\[result,number\]" | jq -r '.builds[] | select(.result == "SUCCESS") | .number' | wc -l)
-FAILED_BUILDS=$(curl -ks --user "nik:xxx" "${JENKINS_URL}/job/${JOB_NAME}/api/json?tree=builds\[result,number\]" | jq -r '.builds[] | select(.result == "FAILURE") | .number' | wc -l)
-BUILD_COUNT=$(curl -ks --user "nik:xxx" "${JENKINS_URL}/job/jen_rest/api/json?tree=builds\[result,number\]" | jq -r '.builds | length')
+JOB_NAMES=("jen_rest" "copy_job")
+JENKINS_URL=("http://127.0.0.1:8080" "http://localhost:8080/job/test_01")
 
-echo "Total number of builds for job ${JOB_NAME}: ${BUILD_COUNT}"
-echo "Number of successful builds for job ${JOB_NAME}: ${SUCCESSFUL_BUILDS}"
-echo "Number of failed builds for job ${JOB_NAME}: ${FAILED_BUILDS}"
+for JOB_NAME in "${JOB_NAMES[@]}"; do
+    SUCCESSFUL_BUILDS=$(curl -ks --user "nik:iis123" "${JENKINS_URL}/job/${JOB_NAME}/api/json?tree=builds[result,number]" | jq -r '.builds[] | select(.result == "SUCCESS") | .number' | wc -l)
+    FAILED_BUILDS=$(curl -ks --user "nik:iis123" "${JENKINS_URL}/job/${JOB_NAME}/api/json?tree=builds[result,number]" | jq -r '.builds[] | select(.result == "FAILURE") | .number' | wc -l)
+    BUILD_COUNT=$(curl -ks --user "nik:iis123" "${JENKINS_URL}/job/${JOB_NAME}/api/json?tree=builds[result,number]" | jq -r '.builds | length')
+
+    echo "Total number of builds for job ${JOB_NAME}: ${BUILD_COUNT}"
+    echo "Number of successful builds for job ${JOB_NAME}: ${SUCCESSFUL_BUILDS}"
+    echo "Number of failed builds for job ${JOB_NAME}: ${FAILED_BUILDS}"
+done
+"
 
 
 
