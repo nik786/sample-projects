@@ -85,3 +85,15 @@ kubectl get pods --selector=prod
 
 
 
+openssl genrsa -out ca.key 2048
+openssl req -new -key ca.key -subj "/CN=FLASK-CA" -out ca.csr
+openssl x509 -req -in ca.csr -signkey ca.key -out ca.csr
+
+
+
+openssl genrsa -out admin.key 2048
+openssl req -new -key admin.key -subj "/CN=FLASK-ADMIN" -out admin.csr
+openssl x509 -req -in admin.csr -CA ca.csr -CAkey ca.key -out admin.crt
+
+
+
