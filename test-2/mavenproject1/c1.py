@@ -9,9 +9,9 @@ urllib3.disable_warnings()
 
 def get_build_info(job_names, jenkins_urls, user, password):
     found_jobs = False
-    with open('build_info.csv', mode='w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['JOB-NAME', 'SUCCESSFUL-BUILDS', 'FAILED-BUILDS', 'TOTAL-BUILDS'])
+    with open('build_info.csv', mode='w', newline='') as csv_file, open('line.txt', mode='w') as line_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(['JOB-NAME', 'SUCCESSFUL-BUILDS', 'FAILED-BUILDS', 'TOTAL-BUILDS'])
         
         for JOB_NAME in job_names:
             for JENKINS_URL in jenkins_urls:
@@ -25,7 +25,8 @@ def get_build_info(job_names, jenkins_urls, user, password):
                     build_count = len(builds)
 
                     if build_count > 0:
-                        writer.writerow([JOB_NAME, successful_builds, failed_builds, build_count])
+                        csv_writer.writerow([JOB_NAME, successful_builds, failed_builds, build_count])
+                        line_file.write(f"<tr><td>{JOB_NAME}</td><td>{successful_builds}</td><td>{failed_builds}</td><td>{build_count}</td></tr>\n")
                         print(f"Total number of builds for job {JOB_NAME} at URL {JENKINS_URL}: {build_count}")
                         print(f"Number of successful builds for job {JOB_NAME} at URL {JENKINS_URL}: {successful_builds}")
                         print(f"Number of failed builds for job {JOB_NAME} at URL {JENKINS_URL}: {failed_builds}")
