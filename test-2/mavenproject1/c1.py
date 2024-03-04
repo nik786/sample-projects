@@ -3,9 +3,13 @@ import json
 import urllib3
 import csv
 from requests.auth import HTTPBasicAuth
+import sys,os
 
 # Disable SSL warnings
 urllib3.disable_warnings()
+user = os.environ['USER']
+password = os.environ['PASS']
+
 
 def get_build_info(job_names, jenkins_urls, user, password):
     found_jobs = False
