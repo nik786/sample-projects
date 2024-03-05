@@ -96,4 +96,5 @@ openssl req -new -key admin.key -subj "/CN=FLASK-ADMIN" -out admin.csr
 openssl x509 -req -in admin.csr -CA ca.csr -CAkey ca.key -out admin.crt
 
 
+openssl req -newkey rsa:2048 -nodes -keyout server.key -x509 -days 365 -out server.crt
 
