@@ -29,9 +29,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8443
 
 # Define SSL certificates path
-ENV SSL_CERT_FILE=/app/admin.crt
-ENV SSL_KEY_FILE=/app/admin.key
 
 # Specify the default command to run when the container starts
 CMD ["python3", "app_flask.py"]
-
