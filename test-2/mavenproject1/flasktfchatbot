@@ -1,0 +1,37 @@
+# Stage 1: Build stage
+FROM python:3.8-slim AS builder
+
+RUN apt-get update
+
+
+# Stage 2: Production stage
+FROM python:3.8-slim
+
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the current directory contents into the container at /app
+COPY . /app
+
+
+RUN apt-get update && \
+    apt-get install -y libssl-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+
+
+
+
+# Expose port 8443
+EXPOSE 8443
+
+# Define SSL certificates path
+ENV SSL_CERT_FILE=/app/admin.crt
+ENV SSL_KEY_FILE=/app/admin.key
+
+# Specify the default command to run when the container starts
+CMD ["python3", "app_flask.py"]
+
