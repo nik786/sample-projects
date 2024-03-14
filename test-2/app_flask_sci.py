@@ -3,7 +3,7 @@ import numpy as np
 import json
 from flask import Flask, render_template, request
 #import ssl
-import nltk
+import re
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.ensemble import RandomForestClassifier
 
@@ -26,19 +26,26 @@ class ChatBot:
 
         for intent in self.intents['intents']:
             for pattern in intent['patterns']:
-                w = nltk.word_tokenize(pattern)
+                w = self.tokenize(pattern)
                 self.words.extend(w)
                 self.documents.append((w, intent['tag']))
                 if intent['tag'] not in self.classes:
                     self.classes.append(intent['tag'])
 
-        self.words = [nltk.stem.WordNetLemmatizer().lemmatize(w.lower()) for w in self.words if w not in self.ignore_words]
+        self.words = [self.stem(w.lower()) for w in self.words if w not in self.ignore_words]
         self.words = sorted(list(set(self.words)))
         self.classes = sorted(list(set(self.classes)))
 
+    def tokenize(self, sentence):
+        return re.findall(r'\b\w+\b', sentence)
+
+    def stem(self, word):
+        # You can implement your own stemming method here if needed
+        return word
+
     def bow(self, sentence):
-        sentence_words = nltk.word_tokenize(sentence)
-        sentence_words = [nltk.stem.WordNetLemmatizer().lemmatize(word.lower()) for word in sentence_words]
+        sentence_words = self.tokenize(sentence)
+        sentence_words = [self.stem(word.lower()) for word in sentence_words]
         bag = [0]*len(self.words)
         for s in sentence_words:
             for i, w in enumerate(self.words):
@@ -119,12 +126,9 @@ def chatbot_response():
     
     return " ".join(tag_response)
 
-
-
 if __name__ == "__main__":
 #    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 #    context.load_cert_chain('server.crt', 'server.key')
     chatbot = ChatBot("intents.json")
     #app.run(host='0.0.0.0', port=8080, ssl_context=context)
     app.run(host='0.0.0.0', port=8080)
-
