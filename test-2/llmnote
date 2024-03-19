@@ -1,0 +1,13 @@
+We have been developing the chatbot engine to serve the FAQs for SM, with me leading this POC. 
+It will help to ease the workload in the support model. I've trained this chatbot engine by help of python based machine 
+learning module scikit-learn and used json file as a data source.
+Next, it needs to be able to work with a large dataset, followed by reacting to queries in Confluence. 
+As I'm currently occupied with exit formalities, I'm passing this responsibility to my teammate Ankit. 
+I believe that he will foster it according to business needs and drive it to the next layer. 
+My support window will be available for Ankit and the team.
+Ankit and team will coordinate closely with Kulbhusan to ensure seamless navigation. 
+Barclays has significant prospects for generative AI, where the LLM module will play a pivotal role in the support model.
+Additionally, the scope of AI and ML extends not only within Barclays periscope but also globally. 
+The upcoming years are expected to be dominated by AI and ML. 
+I am sharing the presentation that I created based on all my research on this topic. 
+My best wishes go with team on this journey.
